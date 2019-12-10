@@ -1,4 +1,4 @@
-package main.java.com.racing.client;
+package com.racing.client;
 
 import javax.swing.*;
 
