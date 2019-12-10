@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class Road extends JPanel implements ActionListener {
+public class GameHelper extends JPanel implements ActionListener {
     private Timer gameTick = new Timer((int) 1000 / 60, this);
 
     private Image roadImage1 = new ImageIcon(getClass().getResource("/road.png")).getImage();
@@ -17,7 +17,7 @@ public class Road extends JPanel implements ActionListener {
 
     private ArrayList<Car> cars = new ArrayList<Car>();
 
-    public Road() {
+    public GameHelper() {
         final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
         for (int i = 0; i < 4; i++) {
             cars.add(new Car(carColors[i], 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));

@@ -9,7 +9,7 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(Settings.W_WIDTH, Settings.W_HEIGHT);
 
-        frame.add(new Road());
+        frame.add(new GameHelper());
         frame.setVisible(true);
     }
 }
