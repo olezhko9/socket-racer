@@ -7,6 +7,7 @@ public class Car {
     private Image image;
     private int posX;
     private int posY;
+    static final int speedX = 10;
 
     public Car(String color, int initX, int initY) {
         this.posX = initX;
@@ -22,5 +23,17 @@ public class Car {
 
     public int getPosY() {
         return posY;
+    }
+
+    public void moveToLeft() {
+        if (this.posX - speedX < Settings.ROAD_LEFT_BORDER)
+            return;
+        this.posX -= speedX;
+    }
+
+    public void moveToRight() {
+        if (this.posX + speedX > Settings.W_WIDTH - Settings.ROAD_RIGHT_BORDER - Settings.CAR_WIDTH)
+            return;
+        this.posX += speedX;
     }
 }

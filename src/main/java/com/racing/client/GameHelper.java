@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class GameHelper extends JPanel implements ActionListener {
@@ -17,11 +19,24 @@ public class GameHelper extends JPanel implements ActionListener {
 
     private ArrayList<Car> cars = new ArrayList<Car>();
 
+    private class CarController extends KeyAdapter {
+        public void keyPressed(KeyEvent event) {
+            if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+                cars.get(0).moveToRight();
+            } else if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+                cars.get(0).moveToLeft();
+            }
+        }
+    }
+
     public GameHelper() {
         final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
         for (int i = 0; i < 4; i++) {
             cars.add(new Car(carColors[i], 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));
         }
+
+        setFocusable(true);
+        addKeyListener(new CarController());
         gameTick.start();
     }
 
