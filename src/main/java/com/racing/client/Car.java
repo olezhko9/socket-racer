@@ -36,4 +36,8 @@ public class Car {
             return;
         this.posX += speedX;
     }
+
+    public Rectangle getCollider() {
+        return new Rectangle(this.posX, this.posY, Settings.CAR_WIDTH, Settings.CAR_HEIGHT);
+    }
 }

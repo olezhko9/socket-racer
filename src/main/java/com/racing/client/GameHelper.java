@@ -1,18 +1,19 @@
 package com.racing.client;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 public class GameHelper extends JPanel implements ActionListener, Runnable {
     private Timer gameTick = new Timer((int) 1000 / 60, this);
+
+    private Boolean isGameOver = false;
 
     Image roadImage1 = new ImageIcon(getClass().getResource("/road.png")).getImage();
     Image roadImage2 = new ImageIcon(getClass().getResource("/road.png")).getImage();
@@ -27,6 +28,7 @@ public class GameHelper extends JPanel implements ActionListener, Runnable {
 
     private class CarController extends KeyAdapter {
         public void keyPressed(KeyEvent event) {
+            if (isGameOver) return;
             if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
                 cars.get(0).moveToRight();
             } else if (event.getKeyCode() == KeyEvent.VK_LEFT) {
@@ -37,7 +39,7 @@ public class GameHelper extends JPanel implements ActionListener, Runnable {
 
     public GameHelper() {
         final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 4; i++) {
             cars.add(new Car(carColors[i], 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));
         }
 
@@ -71,10 +73,31 @@ public class GameHelper extends JPanel implements ActionListener, Runnable {
         }
     }
 
+    private void testCollisions() {
+        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
+        while (obstacleIterator.hasNext()) {
+            Obstacle obstacle = obstacleIterator.next();
+
+            ListIterator<Car> carIterator = cars.listIterator();
+            while (carIterator.hasNext()) {
+                Car car = carIterator.next();
+                if (car.getCollider().intersects(obstacle.getCollider())) {
+                    if (carIterator.nextIndex() - 1 == 0) {
+                        this.isGameOver = true;
+                    }
+                    carIterator.remove();
+                }
+            }
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         this.roadOffset = (this.roadOffset + this.cameraSpeed) % (Settings.W_HEIGHT - Settings.HEADER_HEIGHT);
         repaint();
+        if (!this.isGameOver) {
+            testCollisions();
+        }
     }
 
     @Override

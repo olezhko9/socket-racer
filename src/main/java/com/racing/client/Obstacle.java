@@ -1,5 +1,7 @@
 package com.racing.client;
 
+import java.awt.*;
+
 public class Obstacle {
     private int posX;
     private int posY;
@@ -19,5 +21,9 @@ public class Obstacle {
     public Obstacle(int initX, int initY) {
         this.posX = initX;
         this.posY = initY;
+    }
+
+    public Rectangle getCollider() {
+        return new Rectangle(this.posX, this.posY, Settings.BOX_WIDTH, Settings.BOX_WIDTH);
     }
 }
