@@ -87,6 +87,8 @@ public class Server {
             private void updateGamePlay() {
                 if (serverList.size() > 0) {
                     gameController.updateState();
+                } else {
+                    gameController.resetState();
                 }
                 for (ClientConnection connection : serverList){
                     connection.send(gameController.getState());

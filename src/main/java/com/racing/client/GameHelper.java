@@ -1,5 +1,6 @@
 package com.racing.client;
 
+import com.google.gson.Gson;
 import com.racing.models.Car;
 import com.racing.models.Obstacle;
 
@@ -79,15 +80,8 @@ public class GameHelper implements ActionListener {
             graphics.drawImage(car.getImage(), car.getPosX(), car.getPosY(), null);
         }
 
-        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
-        while (obstacleIterator.hasNext()) {
-            Obstacle obstacle = obstacleIterator.next();
-            if (obstacle.getPosY() > Settings.W_HEIGHT) {
-                obstacleIterator.remove();
-            } else {
-                graphics.drawImage(obstacleImage, obstacle.getPosX(), obstacle.getPosY(), null);
-//                obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
-            }
+        for (Obstacle obstacle : obstacles) {
+            graphics.drawImage(obstacleImage, obstacle.getPosX(), obstacle.getPosY(), null);
         }
     }
 
@@ -117,8 +111,15 @@ public class GameHelper implements ActionListener {
         }
     }
 
-    public void updateState(String state) {
-//        obstacles = Arrays.asList(new Gson().fromJson(state, Obstacle[].class));
-        this.roadOffset = Integer.parseInt(state);
+    public void updateState(String gameState) {
+        String[] states = gameState.split(";");
+        for (String state : states) {
+            String[] data = state.split(":", 2);
+            if (data[0].equals("ROAD")) {
+                this.roadOffset = Integer.parseInt(data[1]);
+            } else if (data[0].equals("OBSTACLES")) {
+                this.obstacles = Arrays.asList(new Gson().fromJson(data[1], Obstacle[].class));
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.racing.models.Car;
 import com.racing.models.Obstacle;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -28,12 +29,27 @@ public class GameController implements Runnable{
     }
 
     public String getState() {
-//        return new Gson().toJson(obstacles);
-        return Integer.toString(roadOffset);
+        return "OBSTACLES:" + new Gson().toJson(obstacles) + ";" +
+                "ROAD:" + Integer.toString(roadOffset) + ";";
     }
 
     public void updateState() {
-        roadOffset = (roadOffset + cameraSpeed) % (Settings.W_HEIGHT - Settings.HEADER_HEIGHT);
+        this.roadOffset = (this.roadOffset + this.cameraSpeed) % (Settings.W_HEIGHT - Settings.HEADER_HEIGHT);
+
+        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
+        while (obstacleIterator.hasNext()) {
+            Obstacle obstacle = obstacleIterator.next();
+            if (obstacle.getPosY() > Settings.W_HEIGHT) {
+                obstacleIterator.remove();
+            } else {
+                obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
+            }
+        }
+    }
+
+    public void resetState() {
+        this.roadOffset = 5;
+        this.obstacles.clear();
     }
 
     @Override

@@ -6,8 +6,8 @@ import java.io.*;
 
 public class Client {
     private Socket socket;
-    private BufferedReader in; // поток чтения из сокета
-    private BufferedWriter out; // поток чтения в сокет
+    private BufferedReader in;
+    private BufferedWriter out;
     private GameHelper gameHelper;
 
     public Client(GameHelper gameHelper, String host, int port) {
@@ -50,7 +50,7 @@ public class Client {
                         Client.this.downService();
                         break;
                     }
-                    System.out.println(event);
+//                    System.out.println(event);
                     gameHelper.updateState(event);
                 }
             } catch (IOException e) {
