@@ -17,17 +17,15 @@ import java.util.List;
 
 public class GameHelper implements ActionListener {
     private Timer gameTick = new Timer((int) 1000 / 60, this);
-
     private Boolean isGameOver = false;
 
     Image roadImage1 = new ImageIcon(getClass().getResource("/road.png")).getImage();
     Image roadImage2 = new ImageIcon(getClass().getResource("/road.png")).getImage();
     Image obstacleImage = new ImageIcon(getClass().getResource("/box.png")).getImage();
 
-    private int roadOffset;
-
     private List<Car> cars = new ArrayList<Car>();
     private List<Obstacle> obstacles = new ArrayList<>();
+    private int roadOffset;
     private Client client;
     private JPanel panel;
     final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
@@ -81,30 +79,9 @@ public class GameHelper implements ActionListener {
         }
     }
 
-    private void testCollisions() {
-        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
-        while (obstacleIterator.hasNext()) {
-            Obstacle obstacle = obstacleIterator.next();
-
-            ListIterator<Car> carIterator = cars.listIterator();
-            while (carIterator.hasNext()) {
-                Car car = carIterator.next();
-                if (car.getCollider().intersects(obstacle.getCollider())) {
-                    if (carIterator.nextIndex() - 1 == 0) {
-                        this.isGameOver = true;
-                    }
-                    carIterator.remove();
-                }
-            }
-        }
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         panel.repaint();
-//        if (!this.isGameOver) {
-//            testCollisions();
-//        }
     }
 
     public void updateState(String gameState) {

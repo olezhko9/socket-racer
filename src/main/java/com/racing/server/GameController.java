@@ -10,11 +10,11 @@ import java.util.*;
 
 public class GameController implements Runnable{
     private int playersCount;
-    private List<Car> cars = new ArrayList<Car>();
+    private List<Car> cars = new ArrayList<>();
     private List<Obstacle> obstacles = new ArrayList<>();
 
     private int roadOffset = 5;
-    private int cameraSpeed = 5;
+    private int cameraSpeed = 4;
     private Thread obstaclesFactory = new Thread(this);
 
     public GameController(int playersCount) {
@@ -48,6 +48,7 @@ public class GameController implements Runnable{
                     obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
                 }
             }
+            this.testCollisions();
         } catch (ConcurrentModificationException e) {}
     }
 
@@ -69,6 +70,22 @@ public class GameController implements Runnable{
                     car.moveToRight();
                 }
                 break;
+            }
+        }
+    }
+
+    private void testCollisions() {
+        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
+        while (obstacleIterator.hasNext()) {
+            Obstacle obstacle = obstacleIterator.next();
+
+            ListIterator<Car> carIterator = cars.listIterator();
+            while (carIterator.hasNext()) {
+                Car car = carIterator.next();
+                if (car.getCollider().intersects(obstacle.getCollider())) {
+                    carIterator.remove();
+                    obstacleIterator.remove();
+                }
             }
         }
     }
