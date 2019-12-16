@@ -13,8 +13,8 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 
-public class GameHelper implements ActionListener, Runnable {
-    private Timer gameTick = new Timer((int) 1000 / 60, this);
+public class GameHelper implements ActionListener {
+    private Timer gameTick = new Timer((int) 1000 / 30, this);
 
     private Boolean isGameOver = false;
 
@@ -22,12 +22,10 @@ public class GameHelper implements ActionListener, Runnable {
     Image roadImage2 = new ImageIcon(getClass().getResource("/road.png")).getImage();
     Image obstacleImage = new ImageIcon(getClass().getResource("/box.png")).getImage();
 
-    private int roadOffset = 5;
-    private int cameraSpeed = 5;
+    private int roadOffset;
 
     private List<Car> cars = new ArrayList<Car>();
     private List<Obstacle> obstacles = new ArrayList<>();
-    Thread obstaclesFactory = new Thread(this);
     private Client client;
     private JPanel panel;
 
@@ -48,8 +46,10 @@ public class GameHelper implements ActionListener, Runnable {
         }
     }
 
-    public GameHelper(Client client) {
-        this.client = client;
+    public GameHelper() {
+        String host = "localhost";
+        int port = 9000;
+        this.client = new Client(this, host, port);
         this.panel = new JPanel() {
             @Override
             public void paint(Graphics graphics) {
@@ -65,7 +65,6 @@ public class GameHelper implements ActionListener, Runnable {
         this.panel.setFocusable(true);
         this.panel.addKeyListener(new CarController());
         gameTick.start();
-        obstaclesFactory.start();
     }
 
     private void paint(Graphics graphics) {
@@ -87,7 +86,7 @@ public class GameHelper implements ActionListener, Runnable {
                 obstacleIterator.remove();
             } else {
                 graphics.drawImage(obstacleImage, obstacle.getPosX(), obstacle.getPosY(), null);
-                obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
+//                obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
             }
         }
     }
@@ -112,27 +111,14 @@ public class GameHelper implements ActionListener, Runnable {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        this.roadOffset = (this.roadOffset + this.cameraSpeed) % (Settings.W_HEIGHT - Settings.HEADER_HEIGHT);
         panel.repaint();
         if (!this.isGameOver) {
             testCollisions();
         }
     }
 
-    @Override
-    public void run() {
-        while (true) {
-            Random random = new Random();
-            try {
-                Thread.sleep(1000);
-                this.obstacles.add(
-                        new Obstacle(
-                        random.nextInt(Settings.W_WIDTH - Settings.ROAD_LEFT_BORDER - Settings.ROAD_RIGHT_BORDER - 60) + Settings.ROAD_LEFT_BORDER,
-                                -random.nextInt(Settings.W_HEIGHT)
-                        ));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    public void updateState(String state) {
+//        obstacles = Arrays.asList(new Gson().fromJson(state, Obstacle[].class));
+        this.roadOffset = Integer.parseInt(state);
     }
 }

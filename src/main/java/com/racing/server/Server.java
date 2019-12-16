@@ -3,6 +3,8 @@ package com.racing.server;
 import java.io.*;
 import java.net.*;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 class ClientConnection extends Thread {
 
@@ -28,9 +30,9 @@ class ClientConnection extends Thread {
                     break;
                 }
                 System.out.println("Echoing: " + word);
-                for (ClientConnection connection : Server.serverList) {
-                    connection.send(word);
-                }
+//                for (ClientConnection connection : Server.serverList) {
+//                    connection.send(word);
+//                }
             }
         } 
         catch (NullPointerException ignored) {} 
@@ -39,7 +41,7 @@ class ClientConnection extends Thread {
         }
     }
 
-    private void send(String msg) {
+    public void send(String msg) {
         try {
             out.write(msg + "\n");
             out.flush();
@@ -70,6 +72,30 @@ public class Server {
     public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(PORT);
         System.out.println("Server Started");
+
+        GameController gameController = new GameController(4);
+        gameController.start();
+
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+                updateGamePlay();
+            }
+
+            private void updateGamePlay() {
+                if (serverList.size() > 0) {
+                    gameController.updateState();
+                }
+                for (ClientConnection connection : serverList){
+                    connection.send(gameController.getState());
+                }
+            }
+
+        },0, (int) 1000 / 30);
+
+
         try {
             while (true) {
                 Socket socket = server.accept();

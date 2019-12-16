@@ -9,9 +9,7 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(Settings.W_WIDTH, Settings.W_HEIGHT);
 
-        String host = "localhost";
-        int port = 9000;
-        GameHelper gameHelper = new GameHelper(new Client(host, port));
+        GameHelper gameHelper = new GameHelper();
         frame.add(gameHelper.getPanel());
         frame.setVisible(true);
     }
