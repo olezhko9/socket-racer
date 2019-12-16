@@ -34,7 +34,6 @@ class ClientConnection extends Thread {
                     this.downService();
                     break;
                 }
-//                System.out.println("Echoing: " + word);
                 gameController.moveCar(this.clientId, word);
             }
         } 
@@ -69,6 +68,7 @@ class ClientConnection extends Thread {
 
 public class Server {
 
+    static final int PLAYERS_COUNT = 2;
     public static final int PORT = 9000;
     public static LinkedList<ClientConnection> serverList = new LinkedList<>();
 
@@ -76,9 +76,27 @@ public class Server {
         ServerSocket server = new ServerSocket(PORT);
         System.out.println("Server Started");
 
-        GameController gameController = new GameController(4);
-        gameController.start();
+        GameController gameController = new GameController(PLAYERS_COUNT);
 
+        try {
+            while (true) {
+                Socket socket = server.accept();
+                try {
+                    serverList.add(new ClientConnection(serverList.size(), socket, gameController));
+                    if (serverList.size() == PLAYERS_COUNT) {
+                        startGame(gameController);
+                    }
+                } catch (IOException e) {
+                    socket.close();
+                }
+            }
+        } finally {
+            server.close();
+        }
+    }
+
+    private static void startGame(GameController gameController) {
+        gameController.start();
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
 
@@ -91,27 +109,13 @@ public class Server {
                 if (serverList.size() > 0) {
                     gameController.updateState();
                 } else {
+                    timer.cancel();
                     gameController.resetState();
                 }
                 for (ClientConnection connection : serverList){
                     connection.send(gameController.getState());
                 }
             }
-
         },0, (int) 1000 / 60);
-
-
-        try {
-            while (true) {
-                Socket socket = server.accept();
-                try {
-                    serverList.add(new ClientConnection(serverList.size(), socket, gameController));
-                } catch (IOException e) {
-                    socket.close();
-                }
-            }
-        } finally {
-            server.close();
-        }
     }
 }

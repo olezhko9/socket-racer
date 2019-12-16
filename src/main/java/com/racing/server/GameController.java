@@ -6,12 +6,15 @@ import com.racing.models.Car;
 import com.racing.models.Obstacle;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class GameController implements Runnable{
+
+    private boolean isGameStarted = false;
     private int playersCount;
-    private List<Car> cars = new ArrayList<>();
-    private List<Obstacle> obstacles = new ArrayList<>();
+    private List<Car> cars = new CopyOnWriteArrayList<>();
+    private List<Obstacle> obstacles = new CopyOnWriteArrayList<>();
 
     private int roadOffset = 5;
     private int cameraSpeed = 4;
@@ -19,14 +22,17 @@ public class GameController implements Runnable{
 
     public GameController(int playersCount) {
         this.playersCount = playersCount;
-
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < playersCount; i++) {
             cars.add(new Car(i, 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));
         }
     }
 
     public void start() {
-        obstaclesFactory.start();
+        if (!obstaclesFactory.isAlive()) {
+            obstaclesFactory.start();
+        }
+        this.isGameStarted = true;
+        System.out.println("GO GO GO");
     }
 
     public String getState() {
@@ -38,25 +44,22 @@ public class GameController implements Runnable{
     public void updateState() {
         this.roadOffset = (this.roadOffset + this.cameraSpeed) % (Settings.W_HEIGHT - Settings.HEADER_HEIGHT);
 
-        try {
-            Iterator<Obstacle> obstacleIterator = obstacles.iterator();
-            while (obstacleIterator.hasNext()) {
-                Obstacle obstacle = obstacleIterator.next();
-                if (obstacle.getPosY() > Settings.W_HEIGHT) {
-                    obstacleIterator.remove();
-                } else {
-                    obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
-                }
+        for (Obstacle obstacle : obstacles) {
+            if (obstacle.getPosY() > Settings.W_HEIGHT) {
+                obstacles.remove(obstacle);
+            } else {
+                obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
             }
-            this.testCollisions();
-        } catch (ConcurrentModificationException e) {}
+        }
+        this.testCollisions();
     }
 
     public void resetState() {
+        this.isGameStarted = false;
         this.roadOffset = 5;
         this.obstacles.clear();
         this.cars.clear();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < playersCount; i++) {
             cars.add(new Car(i, 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));
         }
     }
@@ -75,16 +78,11 @@ public class GameController implements Runnable{
     }
 
     private void testCollisions() {
-        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
-        while (obstacleIterator.hasNext()) {
-            Obstacle obstacle = obstacleIterator.next();
-
-            ListIterator<Car> carIterator = cars.listIterator();
-            while (carIterator.hasNext()) {
-                Car car = carIterator.next();
+        for (Obstacle obstacle : obstacles) {
+            for (Car car : cars) {
                 if (car.getCollider().intersects(obstacle.getCollider())) {
-                    carIterator.remove();
-                    obstacleIterator.remove();
+                    cars.remove(car);
+                    obstacles.remove(obstacle);
                 }
             }
         }
@@ -94,6 +92,7 @@ public class GameController implements Runnable{
     public void run() {
         // obstacles generator
         while (true) {
+            if (!this.isGameStarted) continue;
             Random random = new Random();
             try {
                 Thread.sleep(1000);
