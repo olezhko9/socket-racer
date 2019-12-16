@@ -2,17 +2,17 @@ package com.racing.client;
 
 import java.net.*;
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
-class ServerConnection {
+public class Client {
     private Socket socket;
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток чтения в сокет
     private BufferedReader consoleInput; // поток чтения с консоли
 
-    public ServerConnection(String host, int port) {
+    public Client() {
+        String host = "localhost";
+        int port = 9000;
         try {
             this.socket = new Socket(host, port);
         } catch (IOException e) {
@@ -23,9 +23,8 @@ class ServerConnection {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             new ReadMsg().start();
-            new WriteMsg().start();
         } catch (IOException e) {
-            ServerConnection.this.downService();
+            Client.this.downService();
         }
     }
 
@@ -36,7 +35,8 @@ class ServerConnection {
                 in.close();
                 out.close();
             }
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     // нить чтения сообщений с сервера
@@ -49,49 +49,29 @@ class ServerConnection {
                 while (true) {
                     event = in.readLine();
                     if (event.equals("stop")) {
-                        ServerConnection.this.downService();
+                        Client.this.downService();
                         break;
                     }
                     System.out.println(event);
                 }
             } catch (IOException e) {
-                ServerConnection.this.downService();
+                Client.this.downService();
             }
         }
     }
 
-    // нить отправляющая сообщения приходящие с консоли на сервер
-    public class WriteMsg extends Thread {
-
-        @Override
-        public void run() {
-            while (true) {
-                String message;
-                try {
-                    String date = new SimpleDateFormat("HH:mm:ss").format(new Date());
-                    message = consoleInput.readLine();
-                    if (message.equals("stop")) {
-                        out.write("stop" + "\n");
-                        ServerConnection.this.downService(); 
-                        break;
-                    } else {
-                        out.write("(" + date + ") " + ": " + message + "\n"); // отправляем на сервер
-                    }
-                    out.flush();
-                } catch (IOException e) {
-                    ServerConnection.this.downService();
-                }
+    public void send(String message) {
+        try {
+            if (message.equals("stop")) {
+                out.write("stop" + "\n");
+                this.downService();
+            } else {
+                out.write(message + "\n"); // отправляем на сервер
             }
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.downService();
         }
-    }
-}
-
-public class Client {
-
-    private static String host = "localhost";
-    private static int port = 9000;
-
-    public static void main(String[] args) {
-        new ServerConnection(host, port);
     }
 }

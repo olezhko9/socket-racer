@@ -9,7 +9,8 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(Settings.W_WIDTH, Settings.W_HEIGHT);
 
-        frame.add(new GameHelper());
+        GameHelper gameHelper = new GameHelper(new Client());
+        frame.add(gameHelper.getPanel());
         frame.setVisible(true);
     }
 }

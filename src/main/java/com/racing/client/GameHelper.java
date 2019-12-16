@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 
-public class GameHelper extends JPanel implements ActionListener, Runnable {
+public class GameHelper implements ActionListener, Runnable {
     private Timer gameTick = new Timer((int) 1000 / 60, this);
 
     private Boolean isGameOver = false;
@@ -25,40 +25,56 @@ public class GameHelper extends JPanel implements ActionListener, Runnable {
     private List<Car> cars = new ArrayList<Car>();
     private List<Obstacle> obstacles = new ArrayList<>();
     Thread obstaclesFactory = new Thread(this);
+    private Client client;
+    private JPanel panel;
+
+    public JPanel getPanel() {
+        return panel;
+    }
 
     private class CarController extends KeyAdapter {
         public void keyPressed(KeyEvent event) {
             if (isGameOver) return;
             if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
                 cars.get(0).moveToRight();
+                client.send("RIGHT");
             } else if (event.getKeyCode() == KeyEvent.VK_LEFT) {
                 cars.get(0).moveToLeft();
+                client.send("LEFT");
             }
         }
     }
 
-    public GameHelper() {
+    public GameHelper(Client client) {
+        this.client = client;
+        this.panel = new JPanel() {
+            @Override
+            public void paint(Graphics graphics) {
+                super.paint(graphics);
+                GameHelper.this.paint(graphics);
+            }
+        };
         final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
         for (int i = 0; i < 4; i++) {
             cars.add(new Car(carColors[i], 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));
         }
 
-        setFocusable(true);
-        addKeyListener(new CarController());
+        this.panel.setFocusable(true);
+        this.panel.addKeyListener(new CarController());
         gameTick.start();
         obstaclesFactory.start();
     }
 
-    public void paint(Graphics graphics) {
+    private void paint(Graphics graphics) {
         if (this.roadOffset == 0) {
-            ((Graphics2D) graphics).drawImage(roadImage1, 0, roadImage2.getHeight(null) + roadOffset, null);
-            ((Graphics2D) graphics).drawImage(roadImage2, 0, -roadOffset, null);
+            graphics.drawImage(roadImage1, 0, roadImage2.getHeight(null) + roadOffset, null);
+            graphics.drawImage(roadImage2, 0, -roadOffset, null);
         }
-        ((Graphics2D) graphics).drawImage(roadImage1, 0, roadOffset, null);
-        ((Graphics2D) graphics).drawImage(roadImage2, 0, -roadImage2.getHeight(null) + roadOffset, null);
+        graphics.drawImage(roadImage1, 0, roadOffset, null);
+        graphics.drawImage(roadImage2, 0, -roadImage2.getHeight(null) + roadOffset, null);
 
         for (Car car : cars) {
-            ((Graphics2D) graphics).drawImage(car.getImage(), car.getPosX(), car.getPosY(), null);
+            graphics.drawImage(car.getImage(), car.getPosX(), car.getPosY(), null);
         }
 
         Iterator<Obstacle> obstacleIterator = obstacles.iterator();
@@ -67,7 +83,7 @@ public class GameHelper extends JPanel implements ActionListener, Runnable {
             if (obstacle.getPosY() > Settings.W_HEIGHT) {
                 obstacleIterator.remove();
             } else {
-                ((Graphics2D) graphics).drawImage(obstacleImage, obstacle.getPosX(), obstacle.getPosY(), null);
+                graphics.drawImage(obstacleImage, obstacle.getPosX(), obstacle.getPosY(), null);
                 obstacle.setPosY(obstacle.getPosY() + cameraSpeed);
             }
         }
@@ -94,7 +110,7 @@ public class GameHelper extends JPanel implements ActionListener, Runnable {
     @Override
     public void actionPerformed(ActionEvent e) {
         this.roadOffset = (this.roadOffset + this.cameraSpeed) % (Settings.W_HEIGHT - Settings.HEADER_HEIGHT);
-        repaint();
+        panel.repaint();
         if (!this.isGameOver) {
             testCollisions();
         }
