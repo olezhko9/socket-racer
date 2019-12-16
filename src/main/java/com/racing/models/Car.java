@@ -2,22 +2,22 @@ package com.racing.models;
 
 import com.racing.client.Settings;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Rectangle;
+
 
 public class Car {
-    private Image image;
+    private int carId;
     private int posX;
     private int posY;
     static final int speedX = 10;
 
-    public Car(String color, int initX, int initY) {
+    public Car(int carId, int initX, int initY) {
+        this.carId = carId;
         this.posX = initX;
         this.posY = initY;
-        this.image = new ImageIcon(getClass().getResource("/" + color + ".png")).getImage();
     }
 
-    public Image getImage() { return image; }
+    public int getId() { return carId; }
 
     public int getPosX() {
         return posX;

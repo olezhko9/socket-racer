@@ -14,8 +14,9 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 
+
 public class GameHelper implements ActionListener {
-    private Timer gameTick = new Timer((int) 1000 / 30, this);
+    private Timer gameTick = new Timer((int) 1000 / 60, this);
 
     private Boolean isGameOver = false;
 
@@ -29,6 +30,7 @@ public class GameHelper implements ActionListener {
     private List<Obstacle> obstacles = new ArrayList<>();
     private Client client;
     private JPanel panel;
+    final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
 
     public JPanel getPanel() {
         return panel;
@@ -38,10 +40,8 @@ public class GameHelper implements ActionListener {
         public void keyPressed(KeyEvent event) {
             if (isGameOver) return;
             if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
-                cars.get(0).moveToRight();
                 client.send("RIGHT");
             } else if (event.getKeyCode() == KeyEvent.VK_LEFT) {
-                cars.get(0).moveToLeft();
                 client.send("LEFT");
             }
         }
@@ -58,10 +58,6 @@ public class GameHelper implements ActionListener {
                 GameHelper.this.paint(graphics);
             }
         };
-        final String[] carColors = {"RED", "BLUE", "GREEN", "YELLOW"};
-        for (int i = 0; i < 4; i++) {
-            cars.add(new Car(carColors[i], 65 + 130 * (i + 1), Settings.W_HEIGHT - Settings.CAR_HEIGHT - Settings.HEADER_HEIGHT - 15));
-        }
 
         this.panel.setFocusable(true);
         this.panel.addKeyListener(new CarController());
@@ -77,7 +73,7 @@ public class GameHelper implements ActionListener {
         graphics.drawImage(roadImage2, 0, -roadImage2.getHeight(null) + roadOffset, null);
 
         for (Car car : cars) {
-            graphics.drawImage(car.getImage(), car.getPosX(), car.getPosY(), null);
+            graphics.drawImage(new ImageIcon(getClass().getResource("/" + carColors[car.getId()] + ".png")).getImage(), car.getPosX(), car.getPosY(), null);
         }
 
         for (Obstacle obstacle : obstacles) {
@@ -106,9 +102,9 @@ public class GameHelper implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         panel.repaint();
-        if (!this.isGameOver) {
-            testCollisions();
-        }
+//        if (!this.isGameOver) {
+//            testCollisions();
+//        }
     }
 
     public void updateState(String gameState) {
@@ -119,6 +115,8 @@ public class GameHelper implements ActionListener {
                 this.roadOffset = Integer.parseInt(data[1]);
             } else if (data[0].equals("OBSTACLES")) {
                 this.obstacles = Arrays.asList(new Gson().fromJson(data[1], Obstacle[].class));
+            } else if (data[0].equals("CARS")) {
+                this.cars = Arrays.asList(new Gson().fromJson(data[1], Car[].class));
             }
         }
     }

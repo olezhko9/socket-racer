@@ -6,14 +6,19 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
 class ClientConnection extends Thread {
 
-    private Socket socket; // сокет, через который сервер общается с клиентом
-    private BufferedReader in; // поток чтения из сокета
-    private BufferedWriter out; // поток завписи в сокет
+    private int clientId;
+    private Socket socket;
+    private GameController gameController;
+    private BufferedReader in;
+    private BufferedWriter out;
 
-    public ClientConnection(Socket socket) throws IOException {
+    public ClientConnection(int clientId, Socket socket, GameController gameController) throws IOException {
         this.socket = socket;
+        this.clientId = clientId;
+        this.gameController = gameController;
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         start();
@@ -29,10 +34,8 @@ class ClientConnection extends Thread {
                     this.downService();
                     break;
                 }
-                System.out.println("Echoing: " + word);
-//                for (ClientConnection connection : Server.serverList) {
-//                    connection.send(word);
-//                }
+//                System.out.println("Echoing: " + word);
+                gameController.moveCar(this.clientId, word);
             }
         } 
         catch (NullPointerException ignored) {} 
@@ -95,14 +98,14 @@ public class Server {
                 }
             }
 
-        },0, (int) 1000 / 30);
+        },0, (int) 1000 / 60);
 
 
         try {
             while (true) {
                 Socket socket = server.accept();
                 try {
-                    serverList.add(new ClientConnection(socket));
+                    serverList.add(new ClientConnection(serverList.size(), socket, gameController));
                 } catch (IOException e) {
                     socket.close();
                 }
