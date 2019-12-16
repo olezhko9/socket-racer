@@ -1,4 +1,6 @@
-package com.racing.client;
+package com.racing.models;
+
+import com.racing.client.Settings;
 
 import javax.swing.*;
 import java.awt.*;

@@ -10,9 +10,7 @@ public class Client {
     private BufferedWriter out; // поток чтения в сокет
     private BufferedReader consoleInput; // поток чтения с консоли
 
-    public Client() {
-        String host = "localhost";
-        int port = 9000;
+    public Client(String host, int port) {
         try {
             this.socket = new Socket(host, port);
         } catch (IOException e) {

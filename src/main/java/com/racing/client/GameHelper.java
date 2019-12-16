@@ -1,5 +1,8 @@
 package com.racing.client;
 
+import com.racing.models.Car;
+import com.racing.models.Obstacle;
+
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
